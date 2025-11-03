@@ -16,3 +16,12 @@
   --color-error: red;
   --color-gradient-end: #b81d24;
 }
+
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and EDGE browsers */
+  scrollbar-width: none; /* chrome browser */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Webkit Browsers */
+}

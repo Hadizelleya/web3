@@ -11,6 +11,7 @@ import { MdOutlineFavoriteBorder } from "react-icons/md";
 import { PiPlaylistDuotone } from "react-icons/pi";
 import { IoArrowUndoSharp } from "react-icons/io5";
 import MovieCard from "../components/MovieCard";
+import genresIcons from "../assets/genres/index";
 
 const baseUrl = import.meta.env.VITE_API_URL;
 const apiKey = import.meta.env.VITE_API_KEY;
@@ -19,24 +20,24 @@ const imageUrl = import.meta.env.VITE_IMAGES_URL;
 export default function MovieDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  console.log(id);
 
   const {
     data: movie,
     isLoading,
     error,
   } = useFetchHook(
-    `${baseUrl}/movie/${id}?api_key=${apiKey}&append_to_response=credits%2Cvideos`
+    `movie/${id}`,
+    undefined,
+    "append_to_response=credits%2Cvideos",
+    true
   );
 
   const {
     data: similarMovies,
     isLoading: isSimilarMoviesLoading,
     error: isSimilarMoviesError,
-  } = useFetchHook(
-    `https://api.themoviedb.org/3/movie/${id}/recommendations?api_key=${apiKey}`
-  );
-  console.log(similarMovies);
+  } = useFetchHook(`movie/${id}/recommendations`);
+
   if (isLoading)
     return (
       <div className="w-full h-screen flex items-center justify-center">
@@ -54,6 +55,9 @@ export default function MovieDetails() {
     );
 
   const actors = movie.credits.cast;
+
+  console.log(genresIcons);
+  console.log(movie);
 
   return (
     <>
@@ -90,11 +94,25 @@ export default function MovieDetails() {
 
           {/* genres */}
           <div className="flex items-center justify-evenly mt-10">
-            {movie.genres.map((genre) => (
-              <p className="text-xl text-(--color-muted-dark)" key={genre.id}>
-                {genre.name}
-              </p>
-            ))}
+            {movie.genres.map((genre) => {
+              const key = genre.name.toLowerCase();
+              const icon = genresIcons[key];
+              return (
+                <div className="flex items-center gap-2 " key={genre.id}>
+                  {icon && (
+                    <img
+                      src={icon}
+                      alt={genre.name}
+                      className="w-8 h-8 object-contain"
+                    />
+                  )}
+
+                  <p className="text-xl text-(--color-muted-dark)">
+                    {genre.name}
+                  </p>
+                </div>
+              );
+            })}
           </div>
 
           {/* overview */}
@@ -189,7 +207,11 @@ export default function MovieDetails() {
           </h1>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-10 h-full p-10 items-center justify-center">
             {similarMovies?.results?.slice(0, 10).map((movie) => (
-              <Link to={`/movies/${movie.id}`} className="h-full">
+              <Link
+                to={`/movies/${movie.id}`}
+                key={movie.id}
+                className="h-full"
+              >
                 <MovieCard key={movie?.id} movie={movie} />
               </Link>
             ))}
