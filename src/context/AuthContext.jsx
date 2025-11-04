@@ -1,5 +1,10 @@
 import { createContext, useEffect, useState } from "react";
-import { createSessionId, getAccountDetails, logout } from "../services/auth";
+import {
+  createSessionId,
+  fetchToken,
+  getAccountDetails,
+  logout,
+} from "../services/auth";
 
 const AuthContext = createContext(null);
 
@@ -35,6 +40,19 @@ export const AuthProvider = ({ children }) => {
 
   const login = async () => {
     try {
+      // If we already have a session, try to use it
+      const existingSession = localStorage.getItem("session_id");
+      if (existingSession) {
+        const existingUser = await getAccountDetails(existingSession);
+        if (existingUser) {
+          setUser(existingUser);
+          setIsAuthenticated(true);
+          localStorage.setItem("user", JSON.stringify(existingUser));
+          return true;
+        }
+      }
+
+      // Try to create a session with an approved token
       const sessionId = await createSessionId();
       if (sessionId) {
         const userData = await getAccountDetails(sessionId);
@@ -45,6 +63,10 @@ export const AuthProvider = ({ children }) => {
           return true;
         }
       }
+
+      // No session and/or token not approved yet → start approval flow
+      await fetchToken();
+      return false;
     } catch (error) {
       console.log(error);
       return false;

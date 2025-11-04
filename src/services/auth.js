@@ -13,7 +13,9 @@ export const fetchToken = async () => {
     const token = data.request_token;
     if (data.success) {
       localStorage.setItem("request_token", token);
-      window.location.href = `https://www.themoviedb.org/authenticate/${token}?redirect_to${window.location.origin}/aprroved`;
+      // redirect the user to TMDB to approve the request token
+      // NOTE: redirect_to requires `=` and the correct path spelling
+      window.location.href = `https://www.themoviedb.org/authenticate/${token}?redirect_to=${window.location.origin}/approved`;
     }
   } catch (error) {
     console.log(error);
