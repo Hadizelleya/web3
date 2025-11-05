@@ -1,9 +1,9 @@
 import { createContext, useEffect, useState } from "react";
 import {
   createSessionId,
-  fetchToken,
   getAccountDetails,
   logout,
+  fetchToken,
 } from "../services/auth";
 
 const AuthContext = createContext(null);
@@ -25,6 +25,20 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem("user", JSON.stringify(userData));
           } else {
             logout();
+          }
+        } else {
+          // If we were redirected back from TMDB with an approved token, create the session automatically
+          const token = localStorage.getItem("request_token");
+          if (token) {
+            const newSessionId = await createSessionId();
+            if (newSessionId) {
+              const newUser = await getAccountDetails(newSessionId);
+              if (newUser) {
+                setUser(newUser);
+                setIsAuthenticated(true);
+                localStorage.setItem("user", JSON.stringify(newUser));
+              }
+            }
           }
         }
       } catch (error) {

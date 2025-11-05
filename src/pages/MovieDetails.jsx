@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useFetchHook } from "../hooks/useFetchHook";
 import { HashLoader } from "react-spinners";
 import RatingStars from "../components/RatingStars";
 import Button from "../components/Button";
+import genresIcons from "../assets/genres";
 import { TbWorld } from "react-icons/tb";
 import { MdOutlineOndemandVideo } from "react-icons/md";
 import { MdOutlineFavorite } from "react-icons/md";
@@ -11,7 +12,8 @@ import { MdOutlineFavoriteBorder } from "react-icons/md";
 import { PiPlaylistDuotone } from "react-icons/pi";
 import { IoArrowUndoSharp } from "react-icons/io5";
 import MovieCard from "../components/MovieCard";
-import genresIcons from "../assets/genres/index";
+import { markFavorite } from "../services/auth";
+import { useAuth } from "../hooks/useAuth";
 
 const baseUrl = import.meta.env.VITE_API_URL;
 const apiKey = import.meta.env.VITE_API_KEY;
@@ -20,24 +22,27 @@ const imageUrl = import.meta.env.VITE_IMAGES_URL;
 export default function MovieDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user, isAuthenticated, login } = useAuth();
+  const [isFavorited, setIsFavorited] = useState(false);
+
+  console.log(id);
 
   const {
     data: movie,
     isLoading,
     error,
   } = useFetchHook(
-    `movie/${id}`,
-    undefined,
-    "append_to_response=credits%2Cvideos",
-    true
+    `${baseUrl}/movie/${id}?api_key=${apiKey}&append_to_response=credits%2Cvideos`
   );
 
   const {
     data: similarMovies,
     isLoading: isSimilarMoviesLoading,
     error: isSimilarMoviesError,
-  } = useFetchHook(`movie/${id}/recommendations`);
-
+  } = useFetchHook(
+    `https://api.themoviedb.org/3/movie/${id}/recommendations?api_key=${apiKey}`
+  );
+  console.log(similarMovies);
   if (isLoading)
     return (
       <div className="w-full h-screen flex items-center justify-center">
@@ -55,9 +60,30 @@ export default function MovieDetails() {
     );
 
   const actors = movie.credits.cast;
+  // add to favorites button
+  const addToFavorites = async () => {
+    try {
+      if (!isAuthenticated) {
+        navigate("/");
+        return;
+      }
 
-  console.log(genresIcons);
-  console.log(movie);
+      const sessionId = localStorage.getItem("session_id");
+      if (!sessionId || !user) {
+        alert("no user available");
+        return;
+      }
+
+      const res = await markFavorite(user.id, sessionId, movie.id, true);
+      if (res && res.success) {
+        setIsFavorited((prev) => !prev);
+      } else {
+        alert("Failed to Update Favorite", res);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <>
@@ -93,20 +119,20 @@ export default function MovieDetails() {
           </div>
 
           {/* genres */}
-          <div className="flex items-center justify-evenly mt-10">
+          <div className="flex items-center justify-evenly mt-10 flex-wrap gap-4">
             {movie.genres.map((genre) => {
               const key = genre.name.toLowerCase();
               const icon = genresIcons[key];
+
               return (
-                <div className="flex items-center gap-2 " key={genre.id}>
-                  {icon && (
+                <div className="flex items-center gap-2" key={genre.id}>
+                  {icon ? (
                     <img
                       src={icon}
-                      alt={genre.name}
+                      alt={`${genre.name} icon`}
                       className="w-8 h-8 object-contain"
                     />
-                  )}
-
+                  ) : null}
                   <p className="text-xl text-(--color-muted-dark)">
                     {genre.name}
                   </p>
@@ -177,7 +203,17 @@ export default function MovieDetails() {
             </div>
 
             <div className="flex items-center justify-center gap-2">
-              <Button text={"Favorite"} icon={<MdOutlineFavorite />} />
+              <Button
+                text={isFavorited ? "Unfavorite" : "Favorite"}
+                icon={
+                  isFavorited ? (
+                    <MdOutlineFavorite />
+                  ) : (
+                    <MdOutlineFavoriteBorder />
+                  )
+                }
+                onClick={addToFavorites}
+              />
               <Button text={"WatchList"} icon={<PiPlaylistDuotone />} />
               <Button
                 text={"Back"}

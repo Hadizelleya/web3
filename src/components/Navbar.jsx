@@ -7,7 +7,7 @@ import { GiHamburgerMenu } from "react-icons/gi";
 import Button from "./Button";
 import { IoLogIn } from "react-icons/io5";
 import { useAuth } from "../hooks/useAuth";
-
+import { FaUserAlt } from "react-icons/fa";
 const links = [
   {
     name: "Movies",
@@ -23,8 +23,16 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const location = useLocation();
-
   const { isAuthenticated, loading, login, logout } = useAuth();
+
+  const handleAuthClick = async () => {
+    if (loading) return;
+    if (isAuthenticated) {
+      logout();
+    } else {
+      await login();
+    }
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -37,15 +45,6 @@ export default function Navbar() {
 
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
-  const handleAuthClick = async () => {
-    if (loading) return;
-    if (isAuthenticated) {
-      logout();
-    } else {
-      await login();
-    }
-  };
 
   return (
     <div className=" relative flex items-center justify-between p-4 px-10 gap-10 bg-(--color-bg)">
@@ -73,12 +72,23 @@ export default function Navbar() {
           ))}
         </nav>
 
-        <Button
-          onClick={handleAuthClick}
-          text={loading ? "Loading..." : isAuthenticated ? "Logout" : "Login"}
-          icon={<IoLogIn />}
-          styles={" border-4"}
-        />
+        {isAuthenticated ? (
+          <Button
+            text={loading ? "Loading..." : "Profile"}
+            icon={<FaUserAlt />}
+            styles={" border-2"}
+            isLink
+            isBlank={false}
+            url={"/profile"}
+          />
+        ) : (
+          <Button
+            text={loading ? "Loading..." : "Login"}
+            icon={<IoLogIn />}
+            styles={" border-2"}
+            onClick={handleAuthClick}
+          />
+        )}
       </div>
 
       {/* mobile buttons */}

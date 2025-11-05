@@ -1,42 +1,49 @@
 import React, { useRef, useState } from "react";
-import genresIcons from "../assets/genres/index";
+import genres from "../assets/genres";
 import { useFetchHook } from "../hooks/useFetchHook";
-import { HashLoader } from "react-spinners";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { HashLoader } from "react-spinners";
 import { MovieCard, Pagination } from "../components/export";
+import { Link } from "react-router-dom";
 
 export default function Genres() {
+  const baseApi = import.meta.env.VITE_API_URL;
+  const apiKey = import.meta.env.VITE_API_KEY;
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedGenre, setSelectedGenre] = useState({
     id: 28,
     name: "Action",
   });
+
   const listRef = useRef(null);
 
-  const { data: genres, isLoading, error } = useFetchHook(`genre/movie/list`);
+  const {
+    data: genresData,
+    isLoading,
+    error,
+  } = useFetchHook(`${baseApi}/genre/movie/list?api_key=${apiKey}`);
 
   const {
     data: moviesByGenre,
-    isLoading: isMoviesLoading,
-    error: isMoviesError,
+    isLoading: isMoviesByGenreLoading,
+    error: moviesByGenreError,
   } = useFetchHook(
-    `discover/movie`,
-    [currentPage, selectedGenre],
-    `with_genres=${selectedGenre.id}&page=${currentPage}`,
-    true
+    `${baseApi}/discover/movie?api_key=${apiKey}&with_genres=${selectedGenre.id}&page=${currentPage}`
   );
 
   const handleGenreChange = (genre) => {
     setSelectedGenre(genre);
+    console.log("Selected genre:", genre);
   };
 
+  console.log(genresData);
   console.log(moviesByGenre);
-
-  console.log(genres?.genres);
   return (
     <div>
-      <h2>Genres</h2>
+      <h2 className="text-5xl mt-4 mb-2 text-(--color-primary) text-center">
+        Genres
+      </h2>
+
       {isLoading ? (
         <div className="w-full  flex items-center justify-center">
           <HashLoader size={50} color="red" />
@@ -44,23 +51,23 @@ export default function Genres() {
       ) : (
         <div className="relative h-full">
           <button
-            aria-label="Scroll Left"
+            aria-label="Scroll left"
             onClick={() => {
               if (listRef.current)
                 listRef.current.scrollBy({ left: -500, behavior: "smooth" });
             }}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-(--color-text) p-2 rounded-full shadow-md cursor-pointer hover:scale-105"
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-(--color-text) p-2 rounded-full shadow-md hover:scale-105"
           >
-            <FiChevronLeft className="text-2xl text-(--color-primary) " />
+            <FiChevronLeft className="text-2xl text-(--color-primary) cursor-pointer " />
           </button>
 
           <div
             ref={listRef}
             className="flex gap-5 items-center justify-start overflow-x-auto no-scrollbar w-full p-4 scroll-smooth"
           >
-            {genres.genres.map((genre) => {
+            {genresData?.genres?.map((genre) => {
               const key = genre.name.toLowerCase();
-              const icon = genresIcons[key];
+              const icon = genres[key];
               const isSelected = selectedGenre.id === genre.id;
               return (
                 <div
@@ -68,8 +75,8 @@ export default function Genres() {
                   key={genre.id}
                   className={`flex flex-col items-center mb-4 rounded-md p-4 cursor-pointer min-w-max transition-all duration-300 ${
                     isSelected
-                      ? "bg-(--color-primary) scale-105 shadow-lg"
-                      : "hover:bg-(color-secondary)/50"
+                      ? "bg-(--color-primary) scale-110 shadow-lg"
+                      : "hover:bg-(--color-secondary)/50"
                   }`}
                 >
                   <img
@@ -86,26 +93,26 @@ export default function Genres() {
           </div>
 
           <button
-            aria-label="Scroll Right"
+            aria-label="Scroll right"
             onClick={() => {
               if (listRef.current)
                 listRef.current.scrollBy({ left: 500, behavior: "smooth" });
             }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-(--color-text) p-2 rounded-full shadow-md cursor-pointer hover:scale-105"
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-(--color-text) p-2 rounded-full shadow-md hover:scale-105"
           >
-            <FiChevronRight className="text-2xl text-(--color-primary) " />
+            <FiChevronRight className="text-2xl text-(--color-primary) cursor-pointer" />
           </button>
         </div>
       )}
 
       <div>
-        {isMoviesLoading ? (
+        {isMoviesByGenreLoading ? (
           <div className="w-full  flex items-center justify-center">
             <HashLoader size={50} color="red" />
           </div>
         ) : (
-          <div className="p-4 lg:px-30 px-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-10">
-            {moviesByGenre.results.map((movie) => (
+          <div className="p-5 lg:px-30 px-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-10">
+            {moviesByGenre?.results?.map((movie) => (
               <Link to={`/movies/${movie.id}`} key={movie.id}>
                 <MovieCard movie={movie} />
               </Link>
@@ -114,7 +121,7 @@ export default function Genres() {
         )}
       </div>
 
-      <div className="mb-4">
+      <div>
         <Pagination
           currentPage={currentPage}
           onPageChange={setCurrentPage}

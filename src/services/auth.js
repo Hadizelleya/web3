@@ -13,9 +13,7 @@ export const fetchToken = async () => {
     const token = data.request_token;
     if (data.success) {
       localStorage.setItem("request_token", token);
-      // redirect the user to TMDB to approve the request token
-      // NOTE: redirect_to requires `=` and the correct path spelling
-      window.location.href = `https://www.themoviedb.org/authenticate/${token}?redirect_to=${window.location.origin}/approved`;
+      window.location.href = `https://www.themoviedb.org/authenticate/${token}?redirect_to=${window.location.origin}/`;
     }
   } catch (error) {
     console.log(error);
@@ -35,8 +33,10 @@ export const createSessionId = async () => {
       return session_id;
     } catch (error) {
       console.log(error);
+      return null;
     }
   }
+  return null;
 };
 
 export const getAccountDetails = async (sessionId) => {
@@ -45,7 +45,30 @@ export const getAccountDetails = async (sessionId) => {
     return data;
   } catch (error) {
     console.log(error);
-    return error;
+    return null;
+  }
+};
+
+export const markFavorite = async (
+  accountId,
+  sessionId,
+  movieId,
+  favorite = true
+) => {
+  try {
+    const { data } = await moviesApi.post(
+      `account/${accountId}/favorite`,
+      {
+        media_type: "movie",
+        media_id: movieId,
+        favorite,
+      },
+      { params: { session_id: sessionId } }
+    );
+
+    return data;
+  } catch (error) {
+    console.log(error);
   }
 };
 

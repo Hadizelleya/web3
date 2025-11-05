@@ -16,12 +16,13 @@
   --color-error: red;
   --color-gradient-end: #b81d24;
 }
-
+/* Utility to hide scrollbars while keeping scrolling functional
+   - Works on WebKit, Blink, Edge (Chromium), Firefox and IE/Edge legacy
+*/
 .no-scrollbar {
-  -ms-overflow-style: none; /* IE and EDGE browsers */
-  scrollbar-width: none; /* chrome browser */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
-
 .no-scrollbar::-webkit-scrollbar {
-  display: none; /* Webkit Browsers */
+  display: none; /* WebKit browsers */
 }
