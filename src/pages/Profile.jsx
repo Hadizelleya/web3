@@ -5,10 +5,13 @@ import { CiLogout } from "react-icons/ci";
 import { moviesApi } from "../services/auth";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { BiSolidMoviePlay } from "react-icons/bi";
 import MovieCard from "../components/MovieCard";
+
 export default function Profile() {
   const { user, loading, logout } = useAuth();
   const [favoriteMovies, setFavoriteMovies] = useState([]);
+  const [watchlistedMovies, setWatchlistedMovies] = useState([]);
   console.log(user);
 
   const sessionId = localStorage.getItem("session_id");
@@ -30,7 +33,23 @@ export default function Profile() {
       }
     };
 
+    const getWatchlistedMovies = async () => {
+      try {
+        if (!user) return;
+
+        const { data } = await moviesApi.get(
+          `account/${user?.id}/watchlist/movies`,
+          { params: { session_id: sessionId } }
+        );
+
+        setWatchlistedMovies(data.results);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
     getFavoritedMovies();
+    getWatchlistedMovies();
   }, [user, sessionId]);
 
   const imageURl = import.meta.env.VITE_IMAGES_URL;
@@ -76,13 +95,13 @@ export default function Profile() {
       </div>
 
       {/* watchlist */}
-      <div>
+      <div className="mt-10">
         <h2 className="text-3xl text-(--color-surface) flex gap-2 items-center">
-          <FaStar className="text-4xl text-(--color-secondary)" />
+          <BiSolidMoviePlay className="text-4xl text-(--color-secondary)" />
           My Watchlist
         </h2>
         <div className="grid mt-10 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 items-center justify-center gap-6">
-          {favoriteMovies.map((movie) => (
+          {watchlistedMovies.map((movie) => (
             <Link to={`/movies/${movie.id}`} className="h-full">
               <MovieCard movie={movie} />
             </Link>

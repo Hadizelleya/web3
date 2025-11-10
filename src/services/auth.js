@@ -49,12 +49,7 @@ export const getAccountDetails = async (sessionId) => {
   }
 };
 
-export const markFavorite = async (
-  accountId,
-  sessionId,
-  movieId,
-  favorite = true
-) => {
+export const markFavorite = async (accountId, sessionId, movieId, favorite) => {
   try {
     const { data } = await moviesApi.post(
       `account/${accountId}/favorite`,
@@ -69,6 +64,29 @@ export const markFavorite = async (
     return data;
   } catch (error) {
     console.log(error);
+  }
+};
+
+export const addToWatchLater = async (
+  accountId,
+  sessionId,
+  movieId,
+  action
+) => {
+  try {
+    const { data } = await moviesApi.post(
+      `account/${accountId}/watchlist`,
+      {
+        media_type: "movie",
+        media_id: movieId,
+        watchlist: action,
+      },
+      { params: { session_id: sessionId } }
+    );
+    return data;
+  } catch (error) {
+    console.log(error?.message);
+    return error?.message;
   }
 };
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useFetchHook } from "../hooks/useFetchHook";
 import { HashLoader } from "react-spinners";
@@ -12,8 +12,9 @@ import { MdOutlineFavoriteBorder } from "react-icons/md";
 import { PiPlaylistDuotone } from "react-icons/pi";
 import { IoArrowUndoSharp } from "react-icons/io5";
 import MovieCard from "../components/MovieCard";
-import { markFavorite } from "../services/auth";
+import { addToWatchLater, markFavorite } from "../services/auth";
 import { useAuth } from "../hooks/useAuth";
+import { FaMinus, FaPlus } from "react-icons/fa";
 
 const baseUrl = import.meta.env.VITE_API_URL;
 const apiKey = import.meta.env.VITE_API_KEY;
@@ -24,6 +25,7 @@ export default function MovieDetails() {
   const navigate = useNavigate();
   const { user, isAuthenticated, login } = useAuth();
   const [isFavorited, setIsFavorited] = useState(false);
+  const [isWatchlisted, setIsWatchListed] = useState(false);
 
   console.log(id);
 
@@ -42,6 +44,41 @@ export default function MovieDetails() {
   } = useFetchHook(
     `https://api.themoviedb.org/3/movie/${id}/recommendations?api_key=${apiKey}`
   );
+
+  const { data: favoriteMovies } = useFetchHook(
+    `https://api.themoviedb.org/3/account/${user?.id}/favorite/movies?api_key=${apiKey}`,
+    [],
+    {
+      session_id: localStorage.getItem("session_id"),
+    }
+  );
+
+  const { data: watchlistedMovies } = useFetchHook(
+    `https://api.themoviedb.org/3/account/${user?.id}/watchlist/movies?api_key=${apiKey}`,
+    [],
+    {
+      session_id: localStorage.getItem("session_id"),
+    }
+  );
+
+  useEffect(() => {
+    setIsFavorited(
+      !!favoriteMovies?.results?.find(
+        (favoriteMovie) => favoriteMovie?.id === movie?.id
+      )
+    );
+  }, [favoriteMovies, movie]);
+
+  useEffect(() => {
+    setIsWatchListed(
+      !!watchlistedMovies?.results?.find(
+        (watchlistedMovie) => watchlistedMovie.id === movie?.id
+      )
+    );
+  }, [watchlistedMovies, movie]);
+
+  console.log(isFavorited);
+
   console.log(similarMovies);
   if (isLoading)
     return (
@@ -74,11 +111,45 @@ export default function MovieDetails() {
         return;
       }
 
-      const res = await markFavorite(user.id, sessionId, movie.id, true);
+      const res = await markFavorite(
+        user.id,
+        sessionId,
+        movie.id,
+        !isFavorited
+      );
       if (res && res.success) {
         setIsFavorited((prev) => !prev);
       } else {
         alert("Failed to Update Favorite", res);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const addToWatchlist = async () => {
+    try {
+      if (!isAuthenticated) {
+        navigate("/");
+        return;
+      }
+
+      const sessionId = localStorage.getItem("session_id");
+      if (!sessionId || !user) {
+        alert("no user available");
+        return;
+      }
+
+      const res = await addToWatchLater(
+        user.id,
+        sessionId,
+        movie.id,
+        !isWatchlisted
+      );
+      if (res && res.success) {
+        setIsWatchListed((prev) => !prev);
+      } else {
+        alert("Failed to Add To watchlist", res);
       }
     } catch (error) {
       console.log(error);
@@ -214,7 +285,11 @@ export default function MovieDetails() {
                 }
                 onClick={addToFavorites}
               />
-              <Button text={"WatchList"} icon={<PiPlaylistDuotone />} />
+              <Button
+                text={isWatchlisted ? "UnWatchlist" : "Watchlist"}
+                icon={isWatchlisted ? <FaMinus /> : <FaPlus />}
+                onClick={addToWatchlist}
+              />
               <Button
                 text={"Back"}
                 icon={<IoArrowUndoSharp />}
