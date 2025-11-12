@@ -8,14 +8,14 @@ export default function MovieCard({ movie, featured = false, styles }) {
       <div className="relative w-full h-full">
         {featured ? (
           <img
-            src={`https://media.themoviedb.org/t/p/original/${movie.backdrop_path}`}
-            alt={movie.title}
+            src={`https://media.themoviedb.org/t/p/original/${movie?.backdrop_path}`}
+            alt={movie?.title}
             className="w-full h-full object-cover rounded-2xl "
           />
         ) : (
           <img
-            src={`https://media.themoviedb.org/t/p/original/${movie.poster_path}`}
-            alt={movie.title}
+            src={`https://media.themoviedb.org/t/p/original/${movie?.poster_path}`}
+            alt={movie?.title}
             className="w-full h-full object-cover rounded-2xl "
           />
         )}
@@ -27,10 +27,10 @@ export default function MovieCard({ movie, featured = false, styles }) {
       {featured ? (
         <div className="absolute bottom-5 left-15 text-(--color-white) flex-col items-center justify-center z-20 gap-2">
           <h2 className="text-xl lg:text-2xl xl:text-4xl capitalize font-bold">
-            {movie.title}
+            {movie?.title}
           </h2>
           <p className="text-sm opacity-90 w-full  text-ellipsis overflow-hidden text-nowrap lg:text-wrap max-w-[200px] sm:max-w-[250px] lg:max-w-7xl text-(--color-text)  text-justify">
-            {movie.overview}
+            {movie?.overview}
           </p>
           <RatingStars
             rating={movie?.vote_average?.toFixed(2)}
@@ -42,10 +42,10 @@ export default function MovieCard({ movie, featured = false, styles }) {
       ) : (
         <div className="flex flex-col items-center h-full gap-2 p-2">
           <h2 className="text-xl font-bold text-(--color-primary)">
-            {movie.title}
+            {movie?.title}
           </h2>
           <RatingStars
-            rating={movie.vote_average}
+            rating={movie?.vote_average}
             showNumeric={false}
             iconStyles="text-xl"
           />

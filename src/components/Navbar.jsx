@@ -8,6 +8,7 @@ import Button from "./Button";
 import { IoLogIn } from "react-icons/io5";
 import { useAuth } from "../hooks/useAuth";
 import { FaUserAlt } from "react-icons/fa";
+import { useNetlifyContext } from "../hooks/useNetlifyContext";
 const links = [
   {
     name: "Movies",
@@ -21,9 +22,10 @@ const links = [
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState("");
   const location = useLocation();
   const { isAuthenticated, loading, login, logout } = useAuth();
+
+  const { search, setSearch } = useNetlifyContext();
 
   const handleAuthClick = async () => {
     if (loading) return;

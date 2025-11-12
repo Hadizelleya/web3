@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
-:root {
-  --color-bg: #0a0a0f; /* main background - dark cinematic feel */
+@theme {
+  --color-bg: #f1f1f1; /* main background - dark cinematic feel */
   --color-surface: #141420; /* cards and navbar */
   --color-primary: #e50914; /* Netflix-style red accent */
   --color-secondary: #f5c518; /* IMDb-style gold accent */
@@ -15,7 +15,25 @@
   --color-gradient-start: #e50914;
   --color-error: red;
   --color-gradient-end: #b81d24;
+
+  .dark {
+    --color-bg: #0a0a0f; /* main background - dark cinematic feel */
+    --color-surface: #141420; /* cards and navbar */
+    --color-primary: #e50914; /* Netflix-style red accent */
+    --color-secondary: #f5c518; /* IMDb-style gold accent */
+    --color-text: #f1f1f1; /* main text */
+    --color-white: #ffffff;
+    --color-black: #000000;
+    --color-muted: #a1a1aa; /* subtle text */
+    --color-muted-dark: #747476; /* subtle text */
+    --color-border: #2a2a35; /* borders and dividers */
+    --color-hover: #1f1f2a; /* hover states */
+    --color-gradient-start: #e50914;
+    --color-error: red;
+    --color-gradient-end: #b81d24;
+  }
 }
+
 /* Utility to hide scrollbars while keeping scrolling functional
    - Works on WebKit, Blink, Edge (Chromium), Firefox and IE/Edge legacy
 */
